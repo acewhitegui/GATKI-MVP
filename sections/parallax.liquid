@@ -1,23 +1,95 @@
-{{ 'parallax.css' | asset_url | stylesheet_tag }}
+<section class="container slider-container">
+  <div class="slider-track">
+    <div class="text-field slide" id="field-1">
+      <h1>{{ section.settings.ingredients_text }}</h1>
+    </div>
+    <div class="text-field slide" id="field-2">
+      <h1>{{ section.settings.nature_text }}</h1>
+    </div>
+    <div class="text-field slide" id="field-3">
+      <h1>{{ section.settings.radiance_text }}</h1>
+    </div>
+  </div>
+</section>
 
-<div class="image-container">
-  <img
-    src="https://cdn.shopify.com/s/files/1/0887/0500/7936/files/Ingredient_LipDew_OrangeStack_w_o_Marble.png?v=1732846511"
-    alt="Product Image"
-    height="100vh"
-    width="100%"
-    class="image-background"
-  >
-  <div class="text-field" id="field-1">
-    <h1>{{ section.settings.ingredients_text }}</h1>
-  </div>
-  <div class="text-field" id="field-2">
-    <h1>{{ section.settings.nature_text }}</h1>
-  </div>
-  <div class="text-field" id="field-3">
-    <h1>{{ section.settings.radiance_text }}</h1>
-  </div>
-</div>
+<style>
+    .slider-container {
+        position: relative;
+        width: 100%;
+        height: 100vh;
+        overflow: hidden;
+    }
+
+    .slider-track {
+        display: flex;
+        height: 100%;
+        transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .slide {
+        flex: 0 0 100%;
+        min-width: 100%;
+        opacity: 0.3;
+        transition: opacity 0.3s;
+        position: relative;
+    }
+
+    .slide.active {
+        opacity: 1;
+    }
+</style>
+
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const sliderTrack = document.querySelector('.slider-track');
+        const slides = document.querySelectorAll('.slide');
+        let startX = 0;
+        let currentIndex = 0;
+
+        sliderTrack.addEventListener('touchstart', e => {
+            startX = e.touches[0].clientX;
+        });
+
+        sliderTrack.addEventListener('touchend', e => {
+            const endX = e.changedTouches[0].clientX;
+            handleSwipe(startX - endX);
+        });
+
+        sliderTrack.addEventListener('mousedown', e => {
+            startX = e.clientX;
+            document.addEventListener('mouseup', onMouseUp);
+        });
+
+        const onMouseUp = (e) => {
+            const endX = e.clientX;
+            handleSwipe(startX - endX);
+            document.removeEventListener('mouseup', onMouseUp);
+        };
+
+        const handleSwipe = (deltaX) => {
+            console.log("handle swipe start deltaX : ", deltaX)
+            if (Math.abs(deltaX) < 50) return;
+
+            const direction = deltaX > 0 ? 1 : -1;
+            const newIndex = Math.max(0, Math.min(currentIndex + direction, slides.length - 1));
+            console.log("handle swipe: ", deltaX, ", new index: ", newIndex)
+
+            if (newIndex !== currentIndex) {
+                currentIndex = newIndex;
+                updateSlider();
+            }
+        };
+
+        const updateSlider = () => {
+            slides.forEach((slide, index) => {
+                slide.classList.toggle('active', index === currentIndex);
+            });
+            sliderTrack.style.transform = `translateX(-${currentIndex * 100}%)`;
+        };
+
+        updateSlider();
+    });
+</script>
 
 {% schema %}
 {

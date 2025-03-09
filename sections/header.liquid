@@ -250,29 +250,50 @@
         }
 
       {% if template.name == 'index' %}
-        const logoImages = document.querySelectorAll('.logo img');
+        document.addEventListener("DOMContentLoaded", function () {
+            const defaultLogo = document.querySelector('.logo img.default-logo');
+            const whiteLogoSrc = "{{ 'lgoo-GATKI-white.svg' | asset_url }}";
+            let isAnimating = true;
 
-        // 应用从左上角放大的动画效果
-        const applyLogoZoomEffect = () => {
-            const INITIAL_SCALE = 10;
-            const FINAL_SCALE = 1;
-            const ANIMATION_DURATION_MS = 3000;
+            if (defaultLogo) {
+                // 保存原始logo地址
+                const originalSrc = defaultLogo.src;
 
-            logoImages.forEach(img => {
-                // 设置变换原点为左上角
-                img.style.transformOrigin = 'left top';
+                // 应用放大动画
+                const applyLogoZoomEffect = () => {
+                    const INITIAL_SCALE = 10;
+                    const FINAL_SCALE = 1;
+                    const ANIMATION_DURATION_MS = 3000;
 
-                // 设置初始放大状态
-                img.style.transform = `scale(${INITIAL_SCALE})`;
+                    // 切换为白色logo
+                    defaultLogo.src = whiteLogoSrc;
+                    defaultLogo.style.transformOrigin = 'left top';
+                    defaultLogo.style.transform = `scale(${INITIAL_SCALE})`;
 
-                // 指定时间后恢复正常大小
-                setTimeout(() => {
-                    img.style.transform = `scale(${FINAL_SCALE})`;
-                }, ANIMATION_DURATION_MS);
-            });
-        };
+                    setTimeout(() => {
+                        defaultLogo.style.transform = `scale(${FINAL_SCALE})`;
+                        isAnimating = false;
 
-        applyLogoZoomEffect();
+                        // 动画结束后恢复原始logo（延迟500ms确保过渡效果完成）
+                        setTimeout(() => {
+                            if (!isAnimating) {
+                                defaultLogo.src = originalSrc;
+                            }
+                        }, 500);
+                    }, ANIMATION_DURATION_MS);
+                };
+
+                // 监听图片加载完成后再执行动画
+                defaultLogo.onload = function () {
+                    applyLogoZoomEffect();
+                };
+
+                // 如果图片缓存已存在立即执行
+                if (defaultLogo.complete) {
+                    applyLogoZoomEffect();
+                }
+            }
+        });
       {% endif %}
     });
 
